@@ -1,0 +1,72 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/Ahmed2k2/Jenkins_PHP.git'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                script {
+                    // Add build steps if needed
+                    echo 'Building...'
+                }
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarQube Scanner';
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        
+        stage('Dependency Check') {
+            steps {
+                dependencyCheckAdditionalArguments = ''
+                dependencyCheck additionalArguments: dependencyCheckAdditionalArguments, 
+                                odcInstallation: 'Dependency-Check'
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh 'docker build -t your-image-name .'
+                }
+            }
+        }
+        
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    sh 'trivy image your-image-name'
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'docker run -d your-image-name'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
