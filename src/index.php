@@ -1,104 +1,82 @@
 <?php
 
-// Sample PHP Script with Bugs
+// Global variables
+$uninitializedVar; // Uninitialized variable
+$globalVar = "Hello, World!"; // Use of global variables
 
-// 1. SQL Injection Vulnerability
-// The $user_id parameter is directly inserted into the SQL query without any sanitization or parameterization.
-function getUserData($user_id) {
-    $conn = mysqli_connect("localhost", "root", "password", "test_db");
+// Function with issues
+function buggyFunction($input) {
+    // Use of == instead of ===
+    if ($input == "test") {
+        echo "Test passed!";
+    }
 
+    // SQL Injection vulnerability
+    $conn = mysqli_connect("localhost", "root", "", "test_db");
+    $query = "SELECT * FROM users WHERE username = '$input'";
+    $result = mysqli_query($conn, $query);
+
+    // Possible resource leak: mysqli_close() not called
+    // No check for null $conn or $result
+}
+
+// Hardcoded credentials
+$username = "admin";
+$password = "password123";
+
+// Function with hardcoded credentials
+function connectDatabase() {
+    $conn = mysqli_connect("localhost", "admin", "password123", "test_db");
     if (!$conn) {
         die("Connection failed: " . mysqli_connect_error());
     }
-
-    $sql = "SELECT * FROM users WHERE id = $user_id"; // Vulnerable to SQL Injection
-    $result = mysqli_query($conn, $sql);
-
-    if (mysqli_num_rows($result) > 0) {
-        while($row = mysqli_fetch_assoc($result)) {
-            echo "ID: " . $row["id"] . " - Name: " . $row["name"] . "<br>";
-        }
-    } else {
-        echo "0 results";
-    }
-
-    mysqli_close($conn);
-}
-
-// 2. Unused Variable
-$unusedVariable = "This variable is not used anywhere in the code";
-
-// 3. Use of Deprecated Function
-// The split() function has been deprecated as of PHP 5.3.0 and removed as of PHP 7.0.0
-function splitString($string) {
-    $result = split(" ", $string); // Deprecated function
-    return $result;
-}
-
-// 4. Hardcoded Password
-// Hardcoding passwords is a bad practice.
-function connectToDatabase() {
-    $servername = "localhost";
-    $username = "root";
-    $password = "password"; // Hardcoded password
-    $dbname = "test_db";
-
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-    
     return $conn;
 }
 
-// 5. Missing Error Handling
-// The following function does not handle the case where file_get_contents() fails.
-function readFileContents($filename) {
-    $content = file_get_contents($filename);
-    echo $content;
+// Function that does not return a value in all paths
+function checkValue($value) {
+    if ($value > 10) {
+        return "Greater than 10";
+    }
+    // Missing return statement for other paths
 }
 
-// 6. Inefficient Loop
-// The following loop recalculates the length of the array on each iteration.
-function printNumbers() {
-    $numbers = array(1, 2, 3, 4, 5);
-    for ($i = 0; $i < count($numbers); $i++) { // Inefficient loop
-        echo $numbers[$i] . "\n";
+// Function with code duplication
+function duplicateFunction() {
+    $value1 = 10;
+    $value2 = 20;
+
+    // Duplicate code block
+    if ($value1 > $value2) {
+        echo "Value 1 is greater";
+    } else {
+        echo "Value 2 is greater";
+    }
+
+    // Duplicate code block
+    if ($value1 > $value2) {
+        echo "Value 1 is greater";
+    } else {
+        echo "Value 2 is greater";
     }
 }
 
-// 7. Insecure File Upload
-// This function allows uploading of any file without checking its type or size.
-function uploadFile($file) {
-    $target_dir = "uploads/";
-    $target_file = $target_dir . basename($file["name"]);
-    move_uploaded_file($file["tmp_name"], $target_file); // No file type/size checks
+// Function that uses deprecated function
+function deprecatedFunction() {
+    $input = "Hello";
+    $result = split(",", $input); // split() is deprecated in PHP 7.0+
+    return $result;
 }
 
-// 8. Cross-Site Scripting (XSS)
-// The following function echoes user input directly, which is vulnerable to XSS.
-function greetUser($name) {
-    echo "Hello, " . $name . "! Welcome to our site."; // XSS vulnerability
+// Function with poor naming conventions
+function a($b, $c) {
+    return $b + $c;
 }
 
-// 9. Using eval()
-// The eval() function is dangerous and should be avoided as it allows execution of arbitrary PHP code.
-function executeCode($code) {
-    eval($code); // Dangerous use of eval()
+// Function with no error handling
+function divide($x, $y) {
+    return $x / $y; // No error handling for division by zero
 }
 
-// 10. SQL Query Without Error Checking
-// The following function runs a query without checking if it was successful.
-function runQuery($query) {
-    $conn = connectToDatabase();
-    mysqli_query($conn, $query); // No error checking
-    mysqli_close($conn);
-}
-
-// Example Usage
-getUserData(1);
-printNumbers();
-uploadFile($_FILES["file"]);
-greetUser($_GET["name"]);
 ?>
+
